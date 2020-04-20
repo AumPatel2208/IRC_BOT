@@ -51,7 +51,7 @@ class IrcMain {
                 if (serverMessage.split(":").length >= 3) {
                     // Get the text input they have written
                     String[] messageSplit = serverMessage.split(":")[2].trim().split(" ");
-                    if (messageSplit[0].equals(nick) && messageSplit.length > 1) {
+                    if (messageSplit[0].toLowerCase().equals(nick.toLowerCase()) && messageSplit.length > 1) {
                         if (messageSplit[1].equals(CMD_EXIT)) {
                             // Break out of the while loop to exit
                             // tried using a boolean but the exit was delayed until another message was sent
@@ -63,6 +63,7 @@ class IrcMain {
                             writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0]);
                         } else if (messageSplit[1].equals(CMD_HACK)) {
 
+                            // Hacking visual
                             String dots = "Hacking .";
                             for (int i = 0; i < 5; i++) {
                                 writeMessage(dots);
@@ -74,7 +75,7 @@ class IrcMain {
                                 }
                             }
 
-                            // Maybe return what IP Address and users are in the IRC chat
+                            // Maybe return what IP Addresxs and users are in the IRC chat
                             writeMessage("Server Hack successful");
                         } else {
                             // Write what the person says
