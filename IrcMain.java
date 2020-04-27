@@ -15,6 +15,9 @@ class IrcMain {
     private static final String CMD_EXIT = "exit";
     private static final String CMD_HELLO = "hello";
     private static final String CMD_HACK = "hack";
+    private static final String CMD_ATTACK = "attack";
+    // private static final String CHANNEL = "#thebois";
+    private static final String CHANNEL = "#Goethe";
 
     public static void main(String[] args) throws IOException {
         Scanner console = new Scanner(System.in);
@@ -29,9 +32,10 @@ class IrcMain {
         write("Nick", nick);
         write("USER", "aumBot 8 * :aum's bot v1.0");
         // Hard Coded entry to the channel
-        write("JOIN", "#thebois");
+        // write("JOIN", "#thebois");
+        write("JOIN", CHANNEL);
         boolean active = false;
-        String[] names; // names
+        String[] names = new String[0]; // names
 
         while (in.hasNext()) {
             String serverMessage = in.nextLine();
@@ -52,7 +56,7 @@ class IrcMain {
                     // Get the text input they have written
                     String[] messageSplit = serverMessage.split(":")[2].trim().split(" ");
                     if (messageSplit[0].toLowerCase().equals(nick.toLowerCase()) && messageSplit.length > 1) {
-                        if (messageSplit[1].equals(CMD_EXIT)) {
+                        if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
                             // Break out of the while loop to exit
                             // tried using a boolean but the exit was delayed until another message was sent
                             // into the chat.
@@ -61,7 +65,7 @@ class IrcMain {
                         } else if (messageSplit[1].toLowerCase().equals(CMD_HELLO)) {
                             // Say hello <USERNAME>
                             writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0]);
-                        } else if (messageSplit[1].equals(CMD_HACK)) {
+                        } else if (messageSplit[1].toLowerCase().equals(CMD_HACK)) {
 
                             // Hacking visual
                             String dots = "Hacking .";
@@ -77,6 +81,17 @@ class IrcMain {
 
                             // Maybe return what IP Addresxs and users are in the IRC chat
                             writeMessage("Server Hack successful");
+
+                            // Write names in the server
+                            writeMessage("People in this channel: ");
+                            String tempMessage = "";
+                            for (String name : names) {
+                                tempMessage += name + " ";
+                            }
+                            writeMessage(tempMessage);
+                            writeMessage("Please select a person to attack (type 'bobbot attack <name>' ): ");
+                        } else if (messageSplit[1].toLowerCase().equals(CMD_ATTACK)) {
+                            // What to do when attacking
                         } else {
                             // Write what the person says
                             writeMessage(messageSplit[1]);
@@ -95,7 +110,7 @@ class IrcMain {
 
     // method to send PRIVMSG to #thebois (should change so it is dynamic)
     private static void writeMessage(String message) {
-        write("PRIVMSG", "#thebois :" + message);
+        write("PRIVMSG", CHANNEL + " :" + message);
     }
 
     // method to send write a message
