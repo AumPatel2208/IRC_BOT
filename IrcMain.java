@@ -152,28 +152,6 @@ class IrcMain {
                                 if (messageSplit.length >= 3) {
                                     writeMessage("I banish you from the server " + messageSplit[2]);
                                 }
-                            } else if (messageSplit[1].toLowerCase().equals(CMD_TIME)) { // SCRAP THIS COMMAND
-
-                                URL url = new URL("http://worldtimeapi.org/api/timezone/europe/london.txt");
-                                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                                con.setRequestMethod("GET");
-                                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                                String inputLine;
-                                StringBuffer content = new StringBuffer();
-                                while ((inputLine = in.readLine()) != null) {
-                                    content.append(inputLine);
-                                }
-                                con.disconnect();
-
-                                in.close();
-                                System.out.println(content);
-                                String output = content.toString();
-                                writeMessage(output);
-                                if (messageSplit.length >= 3) {
-                                    if (messageSplit[2].toLowerCase().equals(CMD_TIME_ZONES)) {
-                                        // Make API request to write out all of the time zones
-                                    }
-                                }
                             } else if (messageSplit[1].toLowerCase().equals(CMD_PLAY)) {
                                 // Start playing game disable other commands as well
                                 writeMessage(start.getDescription());
@@ -184,7 +162,12 @@ class IrcMain {
                                 writeMessage(messageSplit[1]);
                             }
                         } else {
+                            if (messageSplit[1].toLowerCase().equals(CMD_PLAY_EAST)) {
 
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
+                                writeMessage("Ending Game");
+                                inGame = false;
+                            }
                         }
                     }
                 }
