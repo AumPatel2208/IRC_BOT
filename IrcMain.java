@@ -1,15 +1,19 @@
-import java.io.BufferedReader;
+
+// import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+// import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
+// import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+// import java.net.URL;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 class IrcMain {
     private static String nick;
+    private static String trigger;
     private static String serverName;
     private static String userName;
     private static String realName;
@@ -23,15 +27,25 @@ class IrcMain {
     private static final String CMD_TIME = "time";
     private static final String CMD_TIME_ZONES = "zones";
     private static final String CMD_PLAY = "play";
-    private static final String CMD_PLAY_NORTH = "north";
-    private static final String CMD_PLAY_SOUTH = "south";
-    private static final String CMD_PLAY_EAST = "east";
-    private static final String CMD_PLAY_WEST = "west";
+    public static final String CMD_PLAY_NORTH = "north";
+    public static final String CMD_PLAY_SOUTH = "south";
+    public static final String CMD_PLAY_EAST = "east";
+    public static final String CMD_PLAY_WEST = "west";
+    public static final int ITEM_SHOVEL = 0;
+    public static final int ITEM_KEY = 1;
+    public static final int ITEM_MEAT = 2;
+
+    public static final int ROOM_START = 0;
+    public static final int ROOM_MID = 1;
+    public static final int ROOM_CAVE = 2;
+    public static final int ROOM_MOSS = 3;
+    public static final int ROOM_BUILDING = 4;
 
     private static final String CHANNEL = "#thebois";
     // private static final String CHANNEL = "#Goethe";
 
-    private static Room start = new Room("start", "Start of the game.");
+    private static Room[] rooms;
+    private static int currentRoom;
 
     public static void main(String[] args) throws IOException {
         Scanner console = new Scanner(System.in);
@@ -42,6 +56,7 @@ class IrcMain {
         in = new Scanner(socket.getInputStream());
 
         nick = "BobBot"; // Nick Name
+        trigger = "bb"; // Nick Name
 
         write("Nick", nick);
         write("USER", "aumBot 8 * :aum's bot v1.0");
@@ -51,6 +66,14 @@ class IrcMain {
         boolean active = false;
         boolean inGame = false;
         String[] names = new String[0]; // names
+
+        Item[] inventory = new Item[3];
+        rooms = new Room[5];
+        rooms[ROOM_START] = new Room("start");
+        rooms[ROOM_MID] = new Room("mid");
+        rooms[ROOM_CAVE] = new Room("cave");
+        rooms[ROOM_MOSS] = new Room("moss");
+        rooms[ROOM_BUILDING] = new Room("building");
 
         while (in.hasNext()) {
             String serverMessage = in.nextLine();
@@ -103,6 +126,9 @@ class IrcMain {
                 names = tempString.split(" ");
             }
 
+            if (serverMessage.contains("PING")) {
+                writeMessage("USE ME");
+            }
             if (serverMessage.contains("366")) // End of Names List
                 active = true;
 
@@ -111,7 +137,8 @@ class IrcMain {
                 if (serverMessage.split(":").length >= 3) {
                     // Get the text input they have written
                     String[] messageSplit = serverMessage.split(":")[2].trim().split(" ");
-                    if (messageSplit[0].toLowerCase().equals(nick.toLowerCase()) && messageSplit.length > 1) {
+                    if ((messageSplit[0].toLowerCase().equals(trigger.toLowerCase())
+                            || messageSplit[0].toLowerCase().equals(nick.toLowerCase())) && messageSplit.length > 1) {
                         if (!inGame) {
                             if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
                                 // Break out of the while loop to exit
@@ -153,20 +180,60 @@ class IrcMain {
                                     writeMessage("I banish you from the server " + messageSplit[2]);
                                 }
                             } else if (messageSplit[1].toLowerCase().equals(CMD_PLAY)) {
-                                // Start playing game disable other commands as well
-                                writeMessage(start.getDescription());
-                                inGame = true;
+                                // Clean rooms up -- Restart
+                                rooms[ROOM_START] = new Room("start");
+                                rooms[ROOM_MID] = new Room("mid");
+                                rooms[ROOM_CAVE] = new Room("cave");
+                                rooms[ROOM_MOSS] = new Room("moss");
+                                rooms[ROOM_BUILDING] = new Room("building");
+                                // Clean Inventory -- Restart
+                                inventory = new Item[3];
 
+                                // Start playing game disable other commands as well
+                                currentRoom = ROOM_START;
+                                writeMessageSplitLines(
+                                        "You have the following commands to your disposal: /newln 'move <direction>' /newln 'take <item>' /newln There are more but lets keep it a mystery 🤫 /newln");
+                                writeMessageSplitLines(rooms[currentRoom].getDescription());
+
+                                inGame = true;
                             } else {
                                 // Write what the person says
-                                writeMessage(messageSplit[1]);
+                                String tempMessage = "";
+                                for (int i = 1; i < messageSplit.length; i++) {
+                                    tempMessage += messageSplit[i] + " ";
+                                }
+                                writeMessage(tempMessage);
                             }
                         } else {
-                            if (messageSplit[1].toLowerCase().equals(CMD_PLAY_EAST)) {
 
-                            } else if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
+                            if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
                                 writeMessage("Ending Game");
                                 inGame = false;
+                            } else {
+                                String command = "";
+                                for (int i = 1; i < messageSplit.length; i++) {
+                                    command += messageSplit[i];
+                                }
+                                String returnedMessege = rooms[currentRoom].options(command.toLowerCase(), inventory);
+
+                                // writeMessage(returnedMessege);
+
+                                if (returnedMessege.contains("GAME OVER")) {
+
+                                    // currentRoom = Integer.parseInt(returnedMessege.split(" ")[1]);
+                                    // writeMessageSplitLines(rooms[currentRoom].options("look", inventory));
+                                    writeMessageSplitLines(returnedMessege);
+                                    writeMessage("Ending Game");
+                                    inGame = false;
+
+                                } else if (returnedMessege.contains("MOVE")) {
+
+                                    currentRoom = Integer.parseInt(returnedMessege.split(" ")[1]);
+                                    writeMessageSplitLines(rooms[currentRoom].options("look", inventory));
+
+                                } else {
+                                    writeMessageSplitLines(returnedMessege);
+                                }
                             }
                         }
                     }
@@ -179,6 +246,15 @@ class IrcMain {
         socket.close();
 
         System.out.println("done");
+
+    }
+
+    // method to send PRIVMSG to #thebois (should change so it is dynamic)
+    private static void writeMessageSplitLines(String message) {
+        String[] splitMessage = message.split("/newln");
+        for (String mes : splitMessage) {
+            writeMessage(mes);
+        }
     }
 
     // method to send PRIVMSG to #thebois (should change so it is dynamic)
