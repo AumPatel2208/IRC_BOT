@@ -22,9 +22,16 @@ class IrcMain {
     private static final String CMD_ATTACK = "attack";
     private static final String CMD_TIME = "time";
     private static final String CMD_TIME_ZONES = "zones";
+    private static final String CMD_PLAY = "play";
+    private static final String CMD_PLAY_NORTH = "north";
+    private static final String CMD_PLAY_SOUTH = "south";
+    private static final String CMD_PLAY_EAST = "east";
+    private static final String CMD_PLAY_WEST = "west";
 
     private static final String CHANNEL = "#thebois";
     // private static final String CHANNEL = "#Goethe";
+
+    private static Room start = new Room("start", "Start of the game.");
 
     public static void main(String[] args) throws IOException {
         Scanner console = new Scanner(System.in);
@@ -42,7 +49,7 @@ class IrcMain {
         // write("JOIN", "#thebois");
         write("JOIN", CHANNEL);
         boolean active = false;
-
+        boolean inGame = false;
         String[] names = new String[0]; // names
 
         while (in.hasNext()) {
@@ -98,75 +105,86 @@ class IrcMain {
 
             if (serverMessage.contains("366")) // End of Names List
                 active = true;
+
             if (active) {
+
                 if (serverMessage.split(":").length >= 3) {
                     // Get the text input they have written
                     String[] messageSplit = serverMessage.split(":")[2].trim().split(" ");
                     if (messageSplit[0].toLowerCase().equals(nick.toLowerCase()) && messageSplit.length > 1) {
-                        if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
-                            // Break out of the while loop to exit
-                            // tried using a boolean but the exit was delayed until another message was sent
-                            // into the chat.
-                            break;
+                        if (!inGame) {
+                            if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
+                                // Break out of the while loop to exit
+                                // tried using a boolean but the exit was delayed until another message was sent
+                                // into the chat.
+                                break;
 
-                        } else if (messageSplit[1].toLowerCase().equals(CMD_HELLO)) {
-                            // Say hello <USERNAME>
-                            writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0]);
-                        } else if (messageSplit[1].toLowerCase().equals(CMD_HACK)) {
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_HELLO)) {
+                                // Say hello <USERNAME>
+                                writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0]);
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_HACK)) {
 
-                            // Hacking visual
-                            String dots = "Hacking .";
-                            for (int i = 0; i < 5; i++) {
-                                writeMessage(dots);
-                                dots += ".";
-                                try {
-                                    TimeUnit.MILLISECONDS.sleep(500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                // Hacking visual
+                                String dots = "Hacking .";
+                                for (int i = 0; i < 5; i++) {
+                                    writeMessage(dots);
+                                    dots += ".";
+                                    try {
+                                        TimeUnit.MILLISECONDS.sleep(500);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
 
-                            // Maybe return what IP Addresxs and users are in the IRC chat
-                            writeMessage("Server Hack successful");
+                                // Maybe return what IP Addresxs and users are in the IRC chat
+                                writeMessage("Server Hack successful");
 
-                            // Write names in the server
-                            writeMessage("People in this channel: ");
-                            String tempMessage = "";
-                            for (String name : names) {
-                                tempMessage += name + " ";
-                            }
-                            writeMessage(tempMessage);
-                            writeMessage("Please select a person to attack (type 'bobbot attack <name>' ): ");
-                        } else if (messageSplit[1].toLowerCase().equals(CMD_ATTACK)) {
-                            // What to do when attacking
-                            if (messageSplit.length >= 3) {
-                                writeMessage("I banish you from the server " + messageSplit[2]);
-                            }
-                        } else if (messageSplit[1].toLowerCase().equals(CMD_TIME)) { // SCRAP THIS COMMAND
-
-                            URL url = new URL("http://worldtimeapi.org/api/timezone/europe/london.txt");
-                            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                            con.setRequestMethod("GET");
-                            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                            String inputLine;
-                            StringBuffer content = new StringBuffer();
-                            while ((inputLine = in.readLine()) != null) {
-                                content.append(inputLine);
-                            }
-                            con.disconnect();
-
-                            in.close();
-                            System.out.println(content);
-                            String output = content.toString();
-                            writeMessage(output);
-                            if (messageSplit.length >= 3) {
-                                if (messageSplit[2].toLowerCase().equals(CMD_TIME_ZONES)) {
-                                    // Make API request to write out all of the time zones
+                                // Write names in the server
+                                writeMessage("People in this channel: ");
+                                String tempMessage = "";
+                                for (String name : names) {
+                                    tempMessage += name + " ";
                                 }
+                                writeMessage(tempMessage);
+                                writeMessage("Please select a person to attack (type 'bobbot attack <name>' ): ");
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_ATTACK)) {
+                                // What to do when attacking
+                                if (messageSplit.length >= 3) {
+                                    writeMessage("I banish you from the server " + messageSplit[2]);
+                                }
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_TIME)) { // SCRAP THIS COMMAND
+
+                                URL url = new URL("http://worldtimeapi.org/api/timezone/europe/london.txt");
+                                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                                con.setRequestMethod("GET");
+                                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                                String inputLine;
+                                StringBuffer content = new StringBuffer();
+                                while ((inputLine = in.readLine()) != null) {
+                                    content.append(inputLine);
+                                }
+                                con.disconnect();
+
+                                in.close();
+                                System.out.println(content);
+                                String output = content.toString();
+                                writeMessage(output);
+                                if (messageSplit.length >= 3) {
+                                    if (messageSplit[2].toLowerCase().equals(CMD_TIME_ZONES)) {
+                                        // Make API request to write out all of the time zones
+                                    }
+                                }
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_PLAY)) {
+                                // Start playing game disable other commands as well
+                                writeMessage(start.getDescription());
+                                inGame = true;
+
+                            } else {
+                                // Write what the person says
+                                writeMessage(messageSplit[1]);
                             }
                         } else {
-                            // Write what the person says
-                            writeMessage(messageSplit[1]);
+
                         }
                     }
                 }
