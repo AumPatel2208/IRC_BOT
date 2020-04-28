@@ -42,6 +42,7 @@ class IrcMain {
     public static final int ROOM_BUILDING = 4;
 
     private static final String CHANNEL = "#thebois";
+    // private static final String CHANNEL = "#help";
     // private static final String CHANNEL = "#Goethe";
 
     private static Room[] rooms;
