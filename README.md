@@ -15,3 +15,9 @@
   - banish the named person
 - CMD_PLAY = "play";
   - play an adventure game.
+
+## TODO
+
+- [ ] improve showing game commands
+  - [ ] cheat sheet for all commands
+- [ ] add more functions

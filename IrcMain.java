@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 // import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.List;
 // import java.net.URL;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -20,10 +18,12 @@ class IrcMain {
     private static PrintWriter out;
     private static Scanner in;
 
+    private static final String help = "Commands:/newln - hello: try it/newln - play: play an adventure game/newln - hack: fun little hacking display/newln - attack <username>: try it :)/newln - exit: Exit Channel (if in game, then exits game and makes other commands active again.) ";
     private static final String CMD_EXIT = "exit";
     private static final String CMD_HELLO = "hello";
     private static final String CMD_HACK = "hack";
     private static final String CMD_ATTACK = "attack";
+    private static final String CMD_HELP = "help";
     private static final String CMD_TIME = "time";
     private static final String CMD_TIME_ZONES = "zones";
     private static final String CMD_PLAY = "play";
@@ -51,7 +51,8 @@ class IrcMain {
     public static void main(String[] args) throws IOException {
         Scanner console = new Scanner(System.in);
 
-        Socket socket = new Socket("127.0.0.1", 6667);
+        // Socket socket = new Socket("127.0.0.1", 6667);
+        Socket socket = new Socket("127.0.0.1", 7777);
 
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new Scanner(socket.getInputStream());
@@ -180,6 +181,8 @@ class IrcMain {
                                 if (messageSplit.length >= 3) {
                                     writeMessage("I banish you from the server " + messageSplit[2]);
                                 }
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_HELP)) {
+                                writeMessageSplitLines(help);
                             } else if (messageSplit[1].toLowerCase().equals(CMD_PLAY)) {
                                 // Clean rooms up -- Restart
                                 rooms[ROOM_START] = new Room("start");
@@ -211,18 +214,16 @@ class IrcMain {
                                 writeMessage("Ending Game");
                                 inGame = false;
                             } else {
-                                String command = "";
+                                String command = " ";
                                 for (int i = 1; i < messageSplit.length; i++) {
-                                    command += messageSplit[i];
+                                    command += messageSplit[i] + " ";
                                 }
                                 String returnedMessege = rooms[currentRoom].options(command.toLowerCase(), inventory);
 
                                 // writeMessage(returnedMessege);
 
-                                if (returnedMessege.contains("GAME OVER")) {
-
-                                    // currentRoom = Integer.parseInt(returnedMessege.split(" ")[1]);
-                                    // writeMessageSplitLines(rooms[currentRoom].options("look", inventory));
+                                if (returnedMessege.contains("GAME OVER")
+                                        || returnedMessege.contains("TO BE CONTINUED")) {
                                     writeMessageSplitLines(returnedMessege);
                                     writeMessage("Ending Game");
                                     inGame = false;
@@ -260,7 +261,11 @@ class IrcMain {
 
     // method to send PRIVMSG to #thebois (should change so it is dynamic)
     private static void writeMessage(String message) {
-        write("PRIVMSG", CHANNEL + " :" + message);
+
+        String[] splitMessage = message.split("/newln");
+        for (String mes : splitMessage) {
+            write("PRIVMSG", CHANNEL + " :" + mes);
+        }
     }
 
     // method to send write a message

@@ -20,31 +20,27 @@ public class Room {
             item = new Item("shovel");
             itemClear = true;
             description = "You are at a fork in the road, someone has left a SHOVEL by the tree, there are 4 ways you can go:/newln You can enter a cave "
-                    + RED + "<North>, /newln Walk through an opening in the bush " + RED
-                    + "<South> /newln A tall Building " + RED + "<East> /newln Back " + RED + "<West>";
+                    + RED + "North, /newln Walk through an opening in the bush " + RED + "South /newln A tall Building "
+                    + RED + "East /newln Back " + RED + "West";
             altDescription = "You are at a fork in the road, you have taken the shovel, there are 4 ways you can go:/newln You can enter a cave "
-                    + RED + "<North>, /newln Walk through an opening in the bush " + RED
-                    + "<South> /newln A tall Building " + RED + "<East> /newln Back " + RED + "<West>";
+                    + RED + "North, /newln Walk through an opening in the bush " + RED + "South /newln A tall Building "
+                    + RED + "East /newln Back " + RED + "West";
         } else if (this.name.equals("moss")) {
             item = new Item("meat");
-            description = "The ground here feels soft, only one way to go, Back " + RED + "<North>";
+            description = "The ground here feels soft, only one way to go, Back " + RED + "North";
             altDescription = "After digging with shovel, you see that someone has left a pile of raw MEAT here";
         } else if (this.name.equals("cave")) {
             item = new Item("key");
             description = "You enter the cave, you see a bear in front of you./newln You can still go Back " + RED
-                    + "<south>";
+                    + "south";
             altDescription = "There is a KEY behind the bear, the bear is distracted, now is your chance.";
         } else if (this.name.equals("building")) {
             description = "You are in front of the tall building. You pull the door, it is locked, you need to find a key. /newln You can still go Back "
-                    + RED + "<west>";
-            altDescription = "You can use the key you found";
+                    + RED + "west";
+            altDescription = "You are in front of the tall building. You can use the key you found on the door.";
         } else if (this.name.equals("start")) {
-            description = "Start of game. /newln You see a path in front of you " + RED + "<east>.";
+            description = "Start of game. /newln You see a path in front of you leading " + RED + "east.";
         }
-    }
-
-    public void testChangeInventory(Item[] inventory) {
-        inventory[1] = new Item("sasdd");
     }
 
     public String enterArea() { // fix so it matches game state //MAY NEED TO HANDLE FROM MAIN CLASS
@@ -58,6 +54,15 @@ public class Room {
     public String options(String command, Item[] inventory) {
 
         if (command.contains("look")) { // Fix this so it changes on alt description and stuff
+            if (name.equals("mid")) {
+                if (inventory[IrcMain.ITEM_SHOVEL] != null) {
+                    return altDescription;
+                }
+            } else if (itemClear) {
+                return altDescription;
+            } else if ((name.equals("building")) && (inventory[IrcMain.ITEM_KEY] != null)) {
+                return altDescription;
+            }
             return description;
         } else if (command.contains("inventory")) { // Fix this so it changes on alt description and stuff
             String inveString = "Inventory: ";
@@ -66,6 +71,28 @@ public class Room {
                     inveString += item.getName() + " ";
             }
             return inveString;
+        }
+
+        if (command.contains("die") || command.contains("suicide") || command.contains("oof")) {
+            if (command.contains("die"))
+                return "You just killed yourself by voluntarily giving yourself a heart attack! GAME OVER";
+            if (command.contains("suicide"))
+                return "You just commited suicide by dying! GAME OVER";
+            if (command.contains("oof"))
+                return "You've just oofed yourself! GAME OVER";
+        }
+
+        // if dig is typed in any other level
+        if (!name.equals("moss") && command.contains("dig")) {
+            return "Tried digging, ground is too hard";
+        }
+
+        if (command.contains(" eat ")) {
+            if (command.contains("shovel") && inventory[IrcMain.ITEM_SHOVEL] != null) {
+                return "You forced a shovel down you're throat! Very smart idea, now you're dead... " + "GAME OVER";
+            } else if (command.contains("meat") && inventory[IrcMain.ITEM_MEAT] != null) {
+                return "You just ate raw meat! It was an alright idea, buuuuuuuuuuut, now your dead... " + "GAME OVER";
+            }
         }
 
         // First level if for level
@@ -78,7 +105,8 @@ public class Room {
                 } else {
                     return "Tried digging with hands, not effective";
                 }
-            } else if (command.contains("take") && command.contains(item.getName())) { // Take Shovel
+            } else if ((command.contains("take") || command.contains("pick")) && command.contains(item.getName())) { // Take
+                                                                                                                     // Shovel
                 if (itemClear) {
                     item.itemTaken();
                     inventory[IrcMain.ITEM_MEAT] = item;
@@ -103,17 +131,19 @@ public class Room {
                 inventory[IrcMain.ITEM_MEAT] = null;
                 itemClear = true;
                 return "You dropped the meat, Bear is distracted and is eating the meat. " + altDescription;
-            } else if (command.contains("take") && command.contains(item.getName())) {
+            } else if ((command.contains("take") || command.contains("pick")) && command.contains(item.getName())) {
                 if (itemClear) {
                     if (item.isTaken()) {
                         return ("You already took the key");
                     } else {
                         inventory[IrcMain.ITEM_KEY] = item;
+                        altDescription = "You have taken the key, there is nothing but a bear here. Best go back " + RED
+                                + "south";
                         return (item.getName() + " Taken");
                     }
                 } else {
                     return "The bear saw you, and easily killed you! You should find a way to distract the bear first."
-                            + "/newln GAME OVER";
+                            + "/newln" + RED + "GAME OVER";
                 }
             } else if (command.contains(IrcMain.CMD_PLAY_SOUTH)) {
                 return "MOVE " + IrcMain.ROOM_MID;
@@ -124,7 +154,7 @@ public class Room {
             }
         } else if (name.equals("mid")) {
 
-            if (command.contains("take") && command.contains("shovel")) {
+            if ((command.contains("take") || command.contains("pick")) && command.contains("shovel")) {
                 if (item.isTaken()) {
                     return ("You already took the shovel");
                 } else {
@@ -148,7 +178,7 @@ public class Room {
             // if key is taken
             if (command.contains("open") || command.contains("unlock") || command.contains("door")) {
                 if (inventory[IrcMain.ITEM_KEY] != null) {
-                    return "The key worked! You walk into the building and you hear a quite whispers in the distance. There are people in here looking to catch you again. RUN! /newln TO BE CONTINUED... /newln /newln Thank you for playing.";
+                    return "The key worked! You walk into the building and you hear a quiet whispers in the distance. There are people in here looking to catch you again. RUN! /newln TO BE CONTINUED... /newln /newln Thank you for playing.";
                 } else {
                     return description;
                 }
