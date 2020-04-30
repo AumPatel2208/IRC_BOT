@@ -1,12 +1,8 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -31,8 +27,6 @@ class IrcMain {
     private static final String CMD_HACK = "hack";
     private static final String CMD_ATTACK = "attack";
     private static final String CMD_HELP = "help";
-    private static final String CMD_TIME = "time";
-    private static final String CMD_TIME_ZONES = "zones";
     private static final String CMD_PLAY = "play";
     public static final String CMD_PLAY_NORTH = "north";
     public static final String CMD_PLAY_SOUTH = "south";
@@ -241,7 +235,7 @@ class IrcMain {
                                             writeMessage("    " + line);
                                     }
                                 } catch (Exception e) {
-                                    // TODO: handle exception
+
                                     System.out.println("Exception::: " + e);
                                     writeMessage("Try again, or restart bot for Joke functionality.");
                                 }
@@ -293,7 +287,7 @@ class IrcMain {
                                     }
 
                                 } catch (Exception e) {
-                                    // TODO: handle exception
+
                                     System.out.println("Exception::: " + e);
                                     writeMessage("Try again, or restart bot for news functionality.");
                                 }
@@ -310,7 +304,6 @@ class IrcMain {
                                     writeMessage("    " + motivationString);
 
                                 } catch (Exception e) {
-                                    // TODO: handle exception
                                     System.out.println("Exception::: " + e);
                                     writeMessage("Try again, or restart bot for motivation functionality.");
                                 }
