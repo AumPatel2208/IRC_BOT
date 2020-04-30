@@ -19,33 +19,38 @@ public class Room {
         if (this.name.equals("mid")) {
             item = new Item("shovel");
             itemClear = true;
-            description = "You are at a fork in the road, someone has left a SHOVEL by the tree, there are 4 ways you can go:/newln You can enter a cave "
-                    + RED + "North, /newln Walk through an opening in the bush " + RED + "South /newln A tall Building "
-                    + RED + "East /newln Back " + RED + "West";
+            description = "You are at a fork in the road, someone has left a SHOVEL by the tree, there are 4 ways you can go:/newln    You can enter a cave "
+                    + RED + "North, /newln    Walk through an opening in the bush " + RED
+                    + "South /newln    A tall Building " + RED + "East /newln    Back where you came from " + RED
+                    + "West";
             altDescription = "You are at a fork in the road, you have taken the shovel, there are 4 ways you can go:/newln You can enter a cave "
                     + RED + "North, /newln Walk through an opening in the bush " + RED + "South /newln A tall Building "
                     + RED + "East /newln Back " + RED + "West";
         } else if (this.name.equals("moss")) {
             item = new Item("meat");
             description = "The ground here feels soft, only one way to go, Back " + RED + "North";
-            altDescription = "After digging with shovel, you see that someone has left a pile of raw MEAT here";
+            altDescription = "After digging with shovel, you see that someone has left a pile of raw MEAT here. You should pick up the meat./newln     You can go back "
+                    + RED + "North";
         } else if (this.name.equals("cave")) {
             item = new Item("key");
-            description = "You enter the cave, you see a bear in front of you./newln You can still go Back " + RED
+            description = "You enter the cave, you see a bear in front of you./newln    You can still go Back " + RED
                     + "south";
-            altDescription = "There is a KEY behind the bear, the bear is distracted, now is your chance.";
+            altDescription = "There is a KEY behind the bear, the bear is distracted, now is your chance./newln    You can still go Back "
+                    + RED + "south";
         } else if (this.name.equals("building")) {
-            description = "You are in front of the tall building. You pull the door, it is locked, you need to find a key. /newln You can still go Back "
+            description = "You are in front of the tall building. You pull the door, it is locked, you need to find a key. /newln    You can still go Back "
                     + RED + "west";
             altDescription = "You are in front of the tall building. You can use the key you found on the door.";
         } else if (this.name.equals("start")) {
-            description = "Start of game. /newln You see a path in front of you leading " + RED + "east.";
+            description = "Start of game. /newln    You see a only one clear path, it is in front of you and is leading "
+                    + RED + "east.";
         }
     }
 
-    public String enterArea() { // fix so it matches game state //MAY NEED TO HANDLE FROM MAIN CLASS
-        return description;
-    }
+    // public String enterArea() { // fix so it matches game state //MAY NEED TO
+    // HANDLE FROM MAIN CLASS
+    // return description;
+    // }
 
     // Add command to eat the meat at any point
     // Add direction command as well
