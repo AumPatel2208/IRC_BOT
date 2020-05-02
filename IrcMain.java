@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ class IrcMain {
     private static String gameCheatSheet;
     private static final String CMD_EXIT = "exit";
     private static final String CMD_PART = "part leave";
+    private static final String CMD_LIST = "list";
     private static final String CMD_HELLO = "hello";
     private static final String CMD_HACK = "hack";
     private static final String CMD_ATTACK = "attack";
@@ -89,6 +91,7 @@ class IrcMain {
         Scanner console = new Scanner(System.in);
 
         Socket socket = new Socket("127.0.0.1", 6667);
+        // Socket socket = new Socket("chat.freenode.net", 6667);
         // Socket socket = new Socket("127.0.0.1", 7777);
 
         out = new PrintWriter(socket.getOutputStream(), true);
@@ -101,11 +104,16 @@ class IrcMain {
         write("USER", "aumBot 8 * :aum's bot v1.0");
         // Hard Coded entry to the channel
         // write("JOIN", "#thebois");
-        write("JOIN", CHANNEL);
+        write("JOIN", CHANNEL); // join the channel specified
+        String currentChannel = CHANNEL.replace("#", "");
+        // write("NAMES", "");
+
         boolean active = false;
         boolean inGame = false;
-        String[] names = new String[0]; // names
-        int numberOfChannels = 1;
+        String[] names = new String[0]; // Array of the names/nicks of the users in the current channel
+        int numberOfChannels = 1; // Number of channels the Bot is in
+        ArrayList<String> listOfChannels = new ArrayList<String>(); // List of channels available
+        boolean toListChannels = false;
         Item[] inventory = new Item[3];
         rooms = new Room[5];
         rooms[ROOM_START] = new Room("start");
@@ -115,7 +123,8 @@ class IrcMain {
         rooms[ROOM_BUILDING] = new Room("building");
         gameHelp = "You have the following commands to your disposal (commands are excluding '<>' and need to be prefixed with "
                 + nick + " or " + trigger
-                + " ): /newln    Type in '<direction>' as north, east, south or west /newln    take <item>: if you see an item which you would like to take /newln    inventory: to display the items you are holding/newln    look : if you want to describe your surroundings/newln    drop/throw: You can drop or throw specific items in your inventory /newln/newlnThere are more but you have to figure them out (if you type in 'bb cheatsheet' it will give you the commands)🕵️/newln";
+                + " ): /newln    Type in '<direction>' as north, east, south or west /newln    take <item>: if you see an item which you would like to take /newln    inventory: to display the items you are holding/newln    look : if you want to describe your surroundings/newln    drop/throw: You can drop or throw specific items in your inventory /newln/newlnThere are more but you have to figure them out (if you type in '"
+                + trigger + " cheatsheet' it will give you the commands)🕵️/newln";
 
         gameCheatSheet = "Extra commands" + nick + " or " + trigger
                 + " ): /newln    dig: Try and dig the ground. If you have the shovel, it will automatically use the shovel/newln    unlock/open/door: will open the building door if you have the key./newln    eat <item>: you can try and eat the items you pick up/newln    die/suicide/oof : You try and kill yourself";
@@ -124,7 +133,7 @@ class IrcMain {
 
             System.out.println("<<< " + serverMessage);
 
-            // Names List
+            // // Names List
             if (serverMessage.contains("353")) {
                 names = serverMessage.split(":")[2].trim().split(" "); // got the names
                 // for (String name : names) {
@@ -158,7 +167,7 @@ class IrcMain {
             }
 
             // remove person that 'parts' from the list
-            if (serverMessage.contains("PART")) {
+            if (serverMessage.contains("PART") || serverMessage.contains("QUIT")) {
                 String tempString = "";
 
                 for (int i = 0; i < names.length; i++) {
@@ -171,32 +180,59 @@ class IrcMain {
             }
 
             if (serverMessage.contains("PING")) {
-                writeMessage("USE ME", "#ping");
+                // writeMessage("USE ME. Write (bb help) for a list of commands", CHANNEL);
+                write("PONG", socket.getLocalAddress().toString());
             }
-            if (serverMessage.contains("366")) // End of Names List
+
+            if (serverMessage.contains("366")) // End of Names List. This is to say that the bot is active and ready to
+                                               // take user commands
                 active = true;
 
+            if (serverMessage.contains("322")) { // If it is listing the channels
+                String[] splitMessage = serverMessage.split("#");
+
+                if (splitMessage.length >= 2) {
+                    splitMessage = splitMessage[1].split(" ");
+                    listOfChannels.add("        #" + splitMessage[0] + " : " + splitMessage[1]);
+                }
+            }
+            if (serverMessage.contains("323") && toListChannels) { // List the channels
+                writeMessage("    Channels: Number of people in Channel", CHANNEL.replace("#", ""));
+                for (String channel : listOfChannels) {
+                    writeMessage(channel, CHANNEL.replace("#", ""));
+                }
+                writeMessage("    " + trigger + " join <channel> to send " + nick + " to that channel",
+                        CHANNEL.replace("#", ""));
+                toListChannels = false;
+            }
+
             if (active) {
+
                 // URL url = new URL(URL_JOKE);
                 // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                String currentChannel = CHANNEL.replace("#", "");
+                if (serverMessage.contains("482")) {
+                    writeMessage(
+                            "☹️  I don't have the power to do that yet. Give me operator status and try again, or use some of my other commands ('"
+                                    + trigger + " help' to show)",
+                            currentChannel);
+
+                }
                 if (serverMessage.split(":").length >= 3) {
                     // Get the text input they have written
                     String[] messageSplit = serverMessage.split(":")[2].trim().split(" ");
-                    if (serverMessage.split("#").length >= 2)
-                        currentChannel = serverMessage.split("#")[1].split(" ")[0];
-                    System.out.println("Current Channel: " + currentChannel);
+
                     if ((messageSplit[0].toLowerCase().equals(trigger.toLowerCase())
                             || messageSplit[0].toLowerCase().equals(nick.toLowerCase())) && messageSplit.length > 1) {
+                        // Gets the current channel the message was recieved from
+                        if (serverMessage.split("#").length >= 2)
+                            currentChannel = serverMessage.split("#")[1].split(" ")[0];
                         if (!inGame) {
                             if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
-                                // Break out of the while loop to exit
-                                // tried using a boolean but the exit was delayed until another message was sent
-                                // into the chat.
-                                break;
+                                // Sends a QUIT command to the server, making the bot leave.
+                                write("QUIT", "");
 
                             } else if (messageSplit[1].toLowerCase().equals(CMD_HELLO)) {
-                                // Say hello <USERNAME>
+                                // replies with hello <username>
                                 writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0], currentChannel);
                             } else if (CMD_PART.contains(messageSplit[1].toLowerCase())) {
 
@@ -225,17 +261,21 @@ class IrcMain {
 
                                 // Write names in the server
                                 writeMessage("People in this channel: ", currentChannel);
+                                // GET NAMES
+                                // write("NAMES", "#" + currentChannel);
                                 String tempMessage = "";
                                 for (String name : names) {
                                     tempMessage += name + " ";
                                 }
                                 writeMessage(tempMessage, currentChannel);
-                                writeMessage("Please select a person to attack (type 'bobbot attack <name>' ): ",
+                                writeMessage(
+                                        "Please select a person to attack (type '" + trigger + " attack <name>' ): ",
                                         currentChannel);
                             } else if (messageSplit[1].toLowerCase().equals(CMD_ATTACK)) {
                                 // What to do when attacking
                                 if (messageSplit.length >= 3) {
                                     writeMessage("I banish you from the server " + messageSplit[2], currentChannel);
+                                    write("KICK", "#" + currentChannel + " " + messageSplit[2]);
                                 }
                             } else if (messageSplit[1].toLowerCase().equals(CMD_JOIN)) {
                                 if (messageSplit.length >= 3) {
@@ -245,6 +285,9 @@ class IrcMain {
                                 }
                             } else if (messageSplit[1].toLowerCase().equals(CMD_HELP)) {
                                 writeMessage(help, currentChannel);
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_LIST)) {
+                                toListChannels = true;
+                                write("LIST", "");
                             } else if (messageSplit[1].toLowerCase().equals(CMD_JOKE)) {
                                 // get joke format and write it out
                                 try {
@@ -348,7 +391,7 @@ class IrcMain {
 
                                 inGame = true;
                             } else if (messageSplit[1].toLowerCase().equals("test")) {
-
+                                write("LIST", "");
                             } else {
                                 // Write what the person says
                                 String tempMessage = "";
@@ -416,6 +459,9 @@ class IrcMain {
     private static void writeMessage(String message, String currentChannel) {
 
         String[] splitMessage = message.split("/newln");
+        if (currentChannel.contains("#")) {
+            currentChannel.replace("#", "");
+        }
         for (String mes : splitMessage) {
             // write("PRIVMSG", CHANNEL + " :" + mes);
             write("PRIVMSG", "#" + currentChannel + " :" + mes);

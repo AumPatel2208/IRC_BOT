@@ -23,9 +23,11 @@
 - [x] NICK
 - [x] USER
 - [x] JOIN
-- [ ] QUIT
+- [x] QUIT
 - [ ] NAMES
-- [ ] PING/PONG
+- [x] PONG
+- [x] KICK
+- [x] LIST
 
 ## TODO
 
@@ -38,3 +40,7 @@
   - [x] NEWS API 
     - KEY : `dfdd63d38d604e4584f6392d8f8c053e`
     - URL :  `https://newsapi.org/v2/top-headlines?country=gb&apiKey=dfdd63d38d604e4584f6392d8f8c053e`
+- [ ] NAMES list based on channels the bot is joined in on
+  - [ ] can use map
+  - [ ] will work
+  - [ ] do this because names are not listed based on channel when hacking

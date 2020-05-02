@@ -8,7 +8,7 @@ public class Room {
     HashMap<String, String> exits; // <direction , nameOfRoom>
     Item item;
     boolean itemClear = false;
-    final String RED = "\u0003\u0030\u0035";
+    final static String RED = "\u0003\u0030\u0035";
 
     public Room(String name) {
         this.name = name;
@@ -79,7 +79,7 @@ public class Room {
 
         if (command.contains("die") || command.contains("suicide") || command.contains("oof")) {
             if (command.contains("die"))
-                return "You just killed yourself by voluntarily giving yourself a heart attack! GAME OVER";
+                return "You just voluntarily gave yourself a heart attack! GAME OVER";
             if (command.contains("suicide"))
                 return "You just commited suicide by dying! GAME OVER";
             if (command.contains("oof"))
