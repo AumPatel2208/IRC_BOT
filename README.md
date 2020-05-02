@@ -16,6 +16,17 @@
 - CMD_PLAY = "play";
   - play an adventure game.
 
+
+## "COMANDS"
+- [x] PART
+- [x] PRIVMSG
+- [x] NICK
+- [x] USER
+- [x] JOIN
+- [ ] QUIT
+- [ ] NAMES
+- [ ] PING/PONG
+
 ## TODO
 
 - [x] improve showing game commands

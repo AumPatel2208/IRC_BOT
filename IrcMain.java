@@ -19,15 +19,17 @@ class IrcMain {
     private static PrintWriter out;
     private static Scanner in;
 
-    private static final String help = "Commands:/newln    - hello: try it/newln    - play: play an adventure game/newln    - news: get the current top 5 news articles/newln    - joke: tells you a joke (safe for work ofc)/newln    - inspire/knowledge/insight/etc...: Will give you inspiration/newln    - hack: fun little hacking display/newln    - attack <username>: try it :)/newln    - exit: Exit Channel (if in game, then exits game and makes other commands active again.) ";
+    private static final String help = "Commands:/newln    - hello: try it/newln    - play: play an adventure game/newln    - news: get the current top 5 news articles/newln    - joke: tells you a joke (safe for work ofc)/newln    - inspire/knowledge/insight/etc...: Will give you inspiration/newln    - hack: fun little hacking display/newln    - attack <username>: try it :)/newln    - leave/part: Bot leaves/parts the channel, if the bot is only in one channel, then the bot will close connection/newln    - exit: Bot Closes its connection and exits the server (if in game, then exits game and makes other commands active again.) ";
     private static String gameHelp;
     private static String gameCheatSheet;
     private static final String CMD_EXIT = "exit";
+    private static final String CMD_PART = "part leave";
     private static final String CMD_HELLO = "hello";
     private static final String CMD_HACK = "hack";
     private static final String CMD_ATTACK = "attack";
     private static final String CMD_HELP = "help";
     private static final String CMD_PLAY = "play";
+    private static final String CMD_JOIN = "join";
     public static final String CMD_PLAY_NORTH = "north";
     public static final String CMD_PLAY_SOUTH = "south";
     public static final String CMD_PLAY_EAST = "east";
@@ -46,9 +48,9 @@ class IrcMain {
     public static final int ROOM_MOSS = 3;
     public static final int ROOM_BUILDING = 4;
 
-    private static final String CHANNEL = "#thebois";
-    // private static final String CHANNEL = "#help";
-    // private static final String CHANNEL = "#Goethe";
+    private static String CHANNEL = "#thebois";
+    // private static String CHANNEL = "#help";
+    // private static String CHANNEL = "#Goethe";
 
     // Rooms for game
     private static Room[] rooms;
@@ -103,7 +105,7 @@ class IrcMain {
         boolean active = false;
         boolean inGame = false;
         String[] names = new String[0]; // names
-
+        int numberOfChannels = 1;
         Item[] inventory = new Item[3];
         rooms = new Room[5];
         rooms[ROOM_START] = new Room("start");
@@ -169,7 +171,7 @@ class IrcMain {
             }
 
             if (serverMessage.contains("PING")) {
-                writeMessage("USE ME");
+                writeMessage("USE ME", "#ping");
             }
             if (serverMessage.contains("366")) // End of Names List
                 active = true;
@@ -177,9 +179,13 @@ class IrcMain {
             if (active) {
                 // URL url = new URL(URL_JOKE);
                 // HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                String currentChannel = CHANNEL.replace("#", "");
                 if (serverMessage.split(":").length >= 3) {
                     // Get the text input they have written
                     String[] messageSplit = serverMessage.split(":")[2].trim().split(" ");
+                    if (serverMessage.split("#").length >= 2)
+                        currentChannel = serverMessage.split("#")[1].split(" ")[0];
+                    System.out.println("Current Channel: " + currentChannel);
                     if ((messageSplit[0].toLowerCase().equals(trigger.toLowerCase())
                             || messageSplit[0].toLowerCase().equals(nick.toLowerCase())) && messageSplit.length > 1) {
                         if (!inGame) {
@@ -191,13 +197,21 @@ class IrcMain {
 
                             } else if (messageSplit[1].toLowerCase().equals(CMD_HELLO)) {
                                 // Say hello <USERNAME>
-                                writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0]);
+                                writeMessage("Hello " + serverMessage.split(":")[1].split("!")[0], currentChannel);
+                            } else if (CMD_PART.contains(messageSplit[1].toLowerCase())) {
+
+                                if (numberOfChannels == 1)
+                                    break;
+                                else {
+                                    write("PART", "#" + currentChannel);
+                                    numberOfChannels--;
+                                }
                             } else if (messageSplit[1].toLowerCase().equals(CMD_HACK)) {
 
                                 // Hacking visual
                                 String dots = "Hacking .";
                                 for (int i = 0; i < 5; i++) {
-                                    writeMessage(dots);
+                                    writeMessage(dots, currentChannel);
                                     dots += ".";
                                     try {
                                         TimeUnit.MILLISECONDS.sleep(500);
@@ -207,48 +221,56 @@ class IrcMain {
                                 }
 
                                 // Maybe return what IP Addresxs and users are in the IRC chat
-                                writeMessage("Server Hack successful");
+                                writeMessage("Server Hack successful", currentChannel);
 
                                 // Write names in the server
-                                writeMessage("People in this channel: ");
+                                writeMessage("People in this channel: ", currentChannel);
                                 String tempMessage = "";
                                 for (String name : names) {
                                     tempMessage += name + " ";
                                 }
-                                writeMessage(tempMessage);
-                                writeMessage("Please select a person to attack (type 'bobbot attack <name>' ): ");
+                                writeMessage(tempMessage, currentChannel);
+                                writeMessage("Please select a person to attack (type 'bobbot attack <name>' ): ",
+                                        currentChannel);
                             } else if (messageSplit[1].toLowerCase().equals(CMD_ATTACK)) {
                                 // What to do when attacking
                                 if (messageSplit.length >= 3) {
-                                    writeMessage("I banish you from the server " + messageSplit[2]);
+                                    writeMessage("I banish you from the server " + messageSplit[2], currentChannel);
+                                }
+                            } else if (messageSplit[1].toLowerCase().equals(CMD_JOIN)) {
+                                if (messageSplit.length >= 3) {
+                                    // writeMessage("/JOIN #" + messageSplit[2].replace("#", ""), currentChannel);
+                                    write("JOIN", "#" + messageSplit[2].replace("#", ""));
+                                    numberOfChannels++;
                                 }
                             } else if (messageSplit[1].toLowerCase().equals(CMD_HELP)) {
-                                writeMessage(help);
+                                writeMessage(help, currentChannel);
                             } else if (messageSplit[1].toLowerCase().equals(CMD_JOKE)) {
                                 // get joke format and write it out
                                 try {
 
                                     String joke = sendGet(URL_JOKE);
-                                    writeMessage("Joke:");
+                                    writeMessage("Joke:", currentChannel);
                                     for (String line : joke.split("\n")) {
                                         if (!line.equals(""))
-                                            writeMessage("    " + line);
+                                            writeMessage("    " + line, currentChannel);
                                     }
                                 } catch (Exception e) {
 
                                     System.out.println("Exception::: " + e);
-                                    writeMessage("Try again, or restart bot for Joke functionality.");
+                                    writeMessage("Try again, or restart bot for Joke functionality.", currentChannel);
                                 }
                                 // Maybe have my bot laugh to them as well.
                                 int randInt = rand.nextInt(10);
                                 if (randInt % 5 == 0) {
-                                    writeMessage("HAHAH, funny isn't it " + serverMessage.split(":")[1].split("!")[0]);
+                                    writeMessage("HAHAH, funny isn't it " + serverMessage.split(":")[1].split("!")[0],
+                                            currentChannel);
                                 } else if (randInt % 8 == 0) {
-                                    writeMessage("I liked that one.");
+                                    writeMessage("I liked that one.", currentChannel);
                                 } else if (randInt % 9 == 0) {
-                                    writeMessage("You like it?");
+                                    writeMessage("You like it?", currentChannel);
                                 } else if (randInt % 7 == 0) {
-                                    writeMessage("OOF!");
+                                    writeMessage("OOF!", currentChannel);
                                 }
 
                             } else if (messageSplit[1].toLowerCase().equals(CMD_NEWS)) {
@@ -267,7 +289,7 @@ class IrcMain {
                                     splitNewsJSON = splitNewsJSON[1].split("\"author\"");
 
                                     // write 5 headlines
-                                    writeMessage("Top 5 headlines in the UK:");
+                                    writeMessage("Top 5 headlines in the UK:", currentChannel);
                                     for (int i = 1; i < 6; i++) {
                                         // System.out.println("\n Article: " + splitNewsJSON[i] + "\n");
 
@@ -282,14 +304,14 @@ class IrcMain {
                                         String newsUrl = splitNewsJSON[i].substring(indexUrl + 6, indexEndOfUrl - 3);
 
                                         // Write it out. indented so it is clear.
-                                        writeMessage("    " + i + ") " + title);
-                                        writeMessage("        url: " + newsUrl);
+                                        writeMessage("    " + i + ") " + title, currentChannel);
+                                        writeMessage("        url: " + newsUrl, currentChannel);
                                     }
 
                                 } catch (Exception e) {
 
                                     System.out.println("Exception::: " + e);
-                                    writeMessage("Try again, or restart bot for news functionality.");
+                                    writeMessage("Try again, or restart bot for news functionality.", currentChannel);
                                 }
 
                             } else if (CMD_MOTIVATES.contains(messageSplit[1].toLowerCase())) {
@@ -301,11 +323,12 @@ class IrcMain {
                                     String motivationString = motivationJSON.split(":")[1].split("}")[0].replace("\"",
                                             "");
 
-                                    writeMessage("    " + motivationString);
+                                    writeMessage("    " + motivationString, currentChannel);
 
                                 } catch (Exception e) {
                                     System.out.println("Exception::: " + e);
-                                    writeMessage("Try again, or restart bot for motivation functionality.");
+                                    writeMessage("Try again, or restart bot for motivation functionality.",
+                                            currentChannel);
                                 }
 
                             } else if (messageSplit[1].toLowerCase().equals(CMD_PLAY)) {
@@ -320,8 +343,8 @@ class IrcMain {
 
                                 // Start playing game disable other commands as well
                                 currentRoom = ROOM_START;
-                                writeMessage(gameHelp);
-                                writeMessage(rooms[currentRoom].getDescription());
+                                writeMessage(gameHelp, currentChannel);
+                                writeMessage(rooms[currentRoom].getDescription(), currentChannel);
 
                                 inGame = true;
                             } else if (messageSplit[1].toLowerCase().equals("test")) {
@@ -332,17 +355,17 @@ class IrcMain {
                                 for (int i = 1; i < messageSplit.length; i++) {
                                     tempMessage += messageSplit[i] + " ";
                                 }
-                                writeMessage(tempMessage);
+                                writeMessage(tempMessage, currentChannel);
                             }
                         } else {
 
                             if (messageSplit[1].toLowerCase().equals(CMD_EXIT)) {
-                                writeMessage("Ending Game");
+                                writeMessage("Ending Game", currentChannel);
                                 inGame = false;
                             } else if (messageSplit[1].toLowerCase().equals(CMD_HELP)) {
-                                writeMessage(gameHelp);
+                                writeMessage(gameHelp, currentChannel);
                             } else if (messageSplit[1].toLowerCase().equals(CMD_PLAY_CHEATSHEET)) {
-                                writeMessage(gameCheatSheet);
+                                writeMessage(gameCheatSheet, currentChannel);
                             } else {
                                 String command = " ";
                                 for (int i = 1; i < messageSplit.length; i++) {
@@ -350,21 +373,21 @@ class IrcMain {
                                 }
                                 String returnedMessege = rooms[currentRoom].options(command.toLowerCase(), inventory);
 
-                                // writeMessage(returnedMessege);
+                                // writeMessage(returnedMessege, currentChannel);
 
                                 if (returnedMessege.contains("GAME OVER")
                                         || returnedMessege.contains("TO BE CONTINUED")) {
-                                    writeMessage(returnedMessege);
-                                    writeMessage("Ending Game");
+                                    writeMessage(returnedMessege, currentChannel);
+                                    writeMessage("Ending Game", currentChannel);
                                     inGame = false;
 
                                 } else if (returnedMessege.contains("MOVE")) {
 
                                     currentRoom = Integer.parseInt(returnedMessege.split(" ")[1]);
-                                    writeMessage(rooms[currentRoom].options("look", inventory));
+                                    writeMessage(rooms[currentRoom].options("look", inventory), currentChannel);
 
                                 } else {
-                                    writeMessage(returnedMessege);
+                                    writeMessage(returnedMessege, currentChannel);
                                 }
                             }
                         }
@@ -390,11 +413,12 @@ class IrcMain {
     // }
 
     // method to send PRIVMSG to #thebois (should change so it is dynamic)
-    private static void writeMessage(String message) {
+    private static void writeMessage(String message, String currentChannel) {
 
         String[] splitMessage = message.split("/newln");
         for (String mes : splitMessage) {
-            write("PRIVMSG", CHANNEL + " :" + mes);
+            // write("PRIVMSG", CHANNEL + " :" + mes);
+            write("PRIVMSG", "#" + currentChannel + " :" + mes);
         }
     }
 
