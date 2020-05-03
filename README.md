@@ -1,46 +1,25 @@
 # IRC BOT
 
-## Setup
+## Commands that the bot will accept 
+> to be prefixed by the trigger or nickname of the bot
+- `hello`: replies by saying `hello <username>`
+- `play`: play an adventure game
+- `news`: get the current top 5 news articles
+- `joke`: tells you a joke (safe for work ofc)
+- `inspire`/`knowledge`/`insight`/etc...: Will give you inspiration
+- `hack`: fun little hacking display
+- `attack` <username>: it will kick that user out of the channel if the bot has operator privileges
+- `leave`/`part`: Bot leaves/parts the channel, if the bot is only in one channel, then the bot will tell the user to use exit if they want to quit the bot
+- `exit`: Bot Closes its connection and exits the server (if in game, then exits game and makes other commands active again.) ";
 
-## Commands
-
-- CMD_EXIT = "exit";
-  - bot exits the server
-  - if the bot is inside of game, it will exit game.
-- CMD_HELLO = "hello";
-  - will reply hello
-- CMD_HACK = "hack";
-  - will fake hack channel and display the active users
-- CMD_ATTACK = "attack" <name>;
-  - banish the named person
-- CMD_PLAY = "play";
-  - play an adventure game.
-
-
-## "COMANDS"
-- [x] PART
-- [x] PRIVMSG
-- [x] NICK
-- [x] USER
-- [x] JOIN
-- [x] QUIT
-- [ ] NAMES
-- [x] PONG
-- [x] KICK
-- [x] LIST
-
-## TODO
-
-- [x] improve showing game commands
-  - [x] cheat sheet for all commands
-- [ ] add more functions
-  - [x] JOKE API (`https://sv443.net/jokeapi/v2`)
-    - [x] Any joke but not nsfw, racist, or sexist, given in plain text`https://sv443.net/jokeapi/v2/joke/Any?blacklistFlags=nsfw,racist,sexist&format=txt`
-  - [x] Motivation API (`https://www.affirmations.dev/`)
-  - [x] NEWS API 
-    - KEY : `dfdd63d38d604e4584f6392d8f8c053e`
-    - URL :  `https://newsapi.org/v2/top-headlines?country=gb&apiKey=dfdd63d38d604e4584f6392d8f8c053e`
-- [ ] NAMES list based on channels the bot is joined in on
-  - [ ] can use map
-  - [ ] will work
-  - [ ] do this because names are not listed based on channel when hacking
+## IRC Protocol commands used
+-  `NICK` - used to set the bot's nick name
+-  `USER` - used to set the bot's username when first joining the server, to make it uniquely identifiable.
+-  `JOIN` - used to make the bot join the original channel and used to make the bot join another channel when `bb join <channel>`
+-  `LIST` - used when user enters `bb list` to list all the servers out.
+-  `NOTICE` - used when the bot enters the channel to notify everyone he is in.
+-  `PRIVMSG` - used to send messages into the channel the bot is being used in.
+-  `PONG` - used when the server sends a `PING` message to the bot.
+-  `KICK` - used when the user enters `bb attack <user>`.
+-  `PART` - used by the bot to leave the channel
+-  `QUIT` - used when user enters `bb exit`.
