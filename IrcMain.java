@@ -138,7 +138,7 @@ class IrcMain {
         gameHelp = "You have the following commands to your disposal (commands are excluding '<>' and need to be prefixed with "
                 + nick + " or " + trigger
                 + " ): /newln    Type in '<direction>' as north, east, south or west /newln    take <item>: if you see an item which you would like to take /newln    inventory: to display the items you are holding/newln    look : if you want to describe your surroundings/newln    drop/throw: You can drop or throw specific items in your inventory /newln/newlnThere are more but you have to figure them out (if you type in '"
-                + trigger + " cheatsheet' it will give you the commands)🕵️/newln";
+                + trigger + " cheatsheet' it will give you the commands)/newln";
 
         gameCheatSheet = "Extra commands" + nick + " or " + trigger
                 + " ): /newln    dig: Try and dig the ground. If you have the shovel, it will automatically use the shovel/newln    unlock/open/door: will open the building door if you have the key./newln    eat <item>: you can try and eat the items you pick up/newln    die/suicide/oof : You try and kill yourself";
@@ -181,7 +181,7 @@ class IrcMain {
 
                 if (serverMessage.contains("482")) {
                     writeMessage(
-                            "☹️  I don't have the power to do that yet. Give me operator status and try again, or use some of my other commands ('"
+                            ":( I don't have the power to do that yet. Give me operator status and try again, or use some of my other commands ('"
                                     + trigger + " help' to show)",
                             currentChannel);
 
