@@ -1,4 +1,4 @@
-# IRC BOT
+# IRC BOT: Aum Patel
 
 ## Build/Run
 > Java 11 required as used the java 11 HTTP libraries
