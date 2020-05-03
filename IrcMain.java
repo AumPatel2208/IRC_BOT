@@ -164,7 +164,9 @@ class IrcMain {
 
                 if (splitMessage.length >= 2) {
                     splitMessage = splitMessage[1].split(" ");
-                    listOfChannels.add("        #" + splitMessage[0] + " : " + splitMessage[1]);
+                    if (splitMessage.length >= 2) {
+                        listOfChannels.add("        #" + splitMessage[0] + " : " + splitMessage[1]);
+                    }
                 }
             }
             if (serverMessage.contains("323") && toListChannels) { // List the channels
