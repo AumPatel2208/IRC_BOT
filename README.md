@@ -1,5 +1,13 @@
 # IRC BOT
 
+## Build/Run
+> Java 11 required as used the java 11 HTTP libraries
+- Inside project directory
+- `javac IrcMain.java`
+- `java IrcMain`
+- enter the correct IP address, port number, and channel name to join
+- Enjoy.
+
 ## Commands that the bot will accept 
 > to be prefixed by the trigger or nickname of the bot
 - `hello`: replies by saying `hello <username>`

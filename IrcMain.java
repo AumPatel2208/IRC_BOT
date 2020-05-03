@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -14,9 +13,8 @@ import java.util.concurrent.TimeUnit;
 class IrcMain {
     private static String nick;
     private static String trigger;
-    private static String serverName;
-    // private static String userName;
-    // private static String realName;
+
+    // Printer and scanner for the network
     private static PrintWriter out;
     private static Scanner in;
 
